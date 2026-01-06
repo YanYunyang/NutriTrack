@@ -1,0 +1,7 @@
+{
+  "name": "NutriTrack Pro - 智能营养管理",
+  "description": "基于 Mifflin-St Jeor 公式的智能营养追踪与个性化饮食建议应用。支持自定义食物库、TDEE 计算及实时营养缺口智能补足建议。",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
