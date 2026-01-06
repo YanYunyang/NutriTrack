@@ -14,8 +14,16 @@
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>NutriTrack Pro</title>
+    
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="./manifest.json" />
+    <meta name="theme-color" content="#84A59D" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="NutriTrack" />
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
       @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
@@ -23,6 +31,8 @@
         font-family: 'Plus Jakarta Sans', sans-serif;
         background-color: #FDFBF7; /* Warm cream background */
         color: #4A4A4A; /* Softer dark grey */
+        -webkit-tap-highlight-color: transparent; /* 移除移动端点击高亮 */
+        user-select: none; /* 防止意外选中文本 */
       }
       .scrollbar-hide::-webkit-scrollbar {
         display: none;
@@ -30,6 +40,10 @@
       .scrollbar-hide {
         -ms-overflow-style: none;
         scrollbar-width: none;
+      }
+      /* 适配安全区域（iPhone 刘海/底部横条） */
+      main {
+        padding-bottom: env(safe-area-inset-bottom);
       }
     </style>
   </head>
