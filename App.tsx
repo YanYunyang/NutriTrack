@@ -37,7 +37,17 @@ const App: React.FC = () => {
 
   const [foodDb, setFoodDb] = useState<FoodItem[]>(() => {
     const saved = localStorage.getItem(STORAGE_KEYS.FOOD_DB);
-    return saved ? JSON.parse(saved) : INITIAL_FOOD_DB;
+    const initialList: FoodItem[] = saved ? JSON.parse(saved) : INITIAL_FOOD_DB;
+    
+    // 数据修复逻辑：如果本地存储的内置食物缺失图标，则从配置中找回
+    return initialList.map(item => {
+      const reference = INITIAL_FOOD_DB.find(f => f.id === item.id);
+      // 如果是内置食物 ID，且图标缺失或为默认占位符，则更新图标
+      if (reference && (!item.icon || item.icon === '🍱')) {
+        return { ...item, icon: reference.icon };
+      }
+      return item;
+    });
   });
 
   const [logs, setLogs] = useState<DailyLogEntry[]>(() => {
@@ -81,7 +91,7 @@ const App: React.FC = () => {
       id: Date.now().toString(),
       foodId: food.id,
       foodName: food.name,
-      icon: food.icon,
+      icon: food.icon || '🍱',
       weight,
       timestamp: Date.now(),
       nutrients: {

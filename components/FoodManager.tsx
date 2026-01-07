@@ -88,7 +88,7 @@ const FoodManager: React.FC<Props> = ({ foodDb, setFoodDb, onLogFood, onBack }) 
           <div className="bg-white rounded-[3rem] w-full max-w-sm p-9 shadow-2xl space-y-8">
             <div className="flex items-center gap-5">
               <div className="w-16 h-16 bg-[#FDFBF7] rounded-3xl flex items-center justify-center text-3xl shadow-inner border border-[#F4F1EA]">
-                {selectedFood.icon}
+                {selectedFood.icon || '🍱'}
               </div>
               <div>
                 <h3 className="text-xl font-black text-[#5B544D] tracking-tight">{selectedFood.name}</h3>
