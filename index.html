@@ -26,22 +26,42 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
       @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+      
+      :root {
+        --app-bg: #FDFBF7;
+        --page-bg: #F4F1EA; /* 桌面端外层背景 */
+      }
+
       body {
         font-family: 'Plus Jakarta Sans', sans-serif;
-        background-color: #FDFBF7;
+        background-color: var(--page-bg);
         color: #5B544D;
         -webkit-tap-highlight-color: transparent;
         -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
         user-select: none;
+        margin: 0;
+        padding: 0;
       }
+
+      /* 隐藏滚动条但保留功能 */
       .scrollbar-hide::-webkit-scrollbar { display: none; }
       .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-      input, select { font-size: 16px !important; } /* 防止移动端输入框自动放大 */
+      
+      input, select { font-size: 16px !important; }
+
+      /* 针对 Safe Area (刘海屏) 的填充 */
+      .safe-top { padding-top: env(safe-area-inset-top); }
+      .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+      
+      #root {
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+      }
     </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root" class="w-full"></div>
     <script type="module" src="./index.tsx"></script>
   </body>
 </html>

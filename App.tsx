@@ -101,38 +101,38 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen pb-32 max-w-lg mx-auto bg-[#FDFBF7] flex flex-col relative overflow-x-hidden">
-      {/* App Bar - MD3 Center-aligned style */}
-      <header className="px-6 py-6 flex items-center justify-between sticky top-0 bg-[#FDFBF7]/95 backdrop-blur-xl z-40">
+    <div className="w-full max-w-lg mx-auto bg-[#FDFBF7] min-h-screen flex flex-col relative shadow-2xl lg:shadow-[#5B544D]/5 overflow-x-hidden border-x border-[#F4F1EA]">
+      {/* App Bar */}
+      <header className="px-6 py-6 safe-top flex items-center justify-between sticky top-0 bg-[#FDFBF7]/95 backdrop-blur-xl z-40">
         <button 
           onClick={() => setView('goals')}
-          className="w-12 h-12 bg-[#F4F1EA] rounded-full flex items-center justify-center text-[#5B544D] active:scale-95 transition-transform"
+          className="w-12 h-12 bg-[#F4F1EA] rounded-full flex items-center justify-center text-[#5B544D] active:scale-90 transition-transform"
         >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
         </button>
         <div className="flex flex-col items-center">
-          <span className="text-[11px] font-black tracking-[0.2em] text-[#84A59D] uppercase">NutriTrack</span>
-          <h1 className="text-lg font-black text-[#5B544D] tracking-tight">
-            {view === 'dashboard' ? '我的主页' : view === 'history' ? '分析报告' : view === 'food' ? '食物仓库' : '个人档案'}
+          <span className="text-[10px] font-black tracking-[0.3em] text-[#84A59D] uppercase opacity-70">NutriTrack Pro</span>
+          <h1 className="text-lg font-black text-[#5B544D] tracking-tight mt-0.5">
+            {view === 'dashboard' ? '今日看板' : view === 'history' ? '趋势分析' : view === 'food' ? '管理食物库' : '个人档案'}
           </h1>
         </div>
-        <div className="w-12 h-12" /> {/* Placeholder for balance */}
+        <div className="w-12 h-12" />
       </header>
 
-      <main className="px-4 flex-grow relative">
-        <div className="transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)]">
+      <main className="px-4 flex-grow relative pb-32">
+        <div className="transition-all duration-300">
           {view === 'dashboard' && (
-            <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
+            <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
               <DailyDashboard 
                 consumed={consumed} 
                 exerciseBurned={totalBurned}
                 goals={goals} 
                 logs={todayLogs} 
+                foodDb={foodDb}
                 onDeleteLog={(id) => setLogs(l => l.filter(x => x.id !== id))}
-                onClearLogs={() => setLogs([])}
-                onAddClick={() => setView('food')}
+                onAddLog={addLog}
               />
-              <SmartAssistant consumed={consumed} goals={goals} foodDb={foodDb} logs={todayLogs} onAddFood={() => setView('food')} />
+              <SmartAssistant consumed={consumed} goals={goals} foodDb={foodDb} logs={todayLogs} onAddFood={(f) => addLog(f, 100)} />
             </div>
           )}
           {view === 'history' && <HistoryTrend trendData={trendData} />}
@@ -141,26 +141,25 @@ const App: React.FC = () => {
         </div>
       </main>
 
-      {/* Navigation Rail / Bottom Nav - MD3 Style */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-[#FDFBF7]/90 backdrop-blur-2xl border-t border-[#F4F1EA] px-6 py-4 flex justify-between items-center z-50">
+      {/* Fixed Navigation Rail */}
+      <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-lg bg-[#FDFBF7]/90 backdrop-blur-2xl border-t border-[#F4F1EA] px-4 py-4 safe-bottom flex justify-between items-center z-50">
         {[
           { id: 'dashboard', label: '主页', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
           { id: 'history', label: '趋势', icon: 'M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z' },
-          { id: 'food', label: '记录', icon: 'M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z' }
+          { id: 'food', label: '食物库', icon: 'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10' }
         ].map(item => (
           <button 
             key={item.id}
             onClick={() => setView(item.id as any)}
             className="group relative flex flex-col items-center flex-1"
           >
-            {/* Active Indicator Container */}
-            <div className="relative flex items-center justify-center w-16 h-8">
+            <div className="relative flex items-center justify-center w-14 h-8 md:w-16">
               <div className={`absolute inset-0 rounded-full transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)] ${view === item.id ? 'bg-[#84A59D] opacity-100 scale-100' : 'bg-transparent opacity-0 scale-75'}`} />
               <div className={`relative z-10 transition-colors duration-300 ${view === item.id ? 'text-white' : 'text-[#CEC3B8]'}`}>
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.2" d={item.icon} /></svg>
+                <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.2" d={item.icon} /></svg>
               </div>
             </div>
-            <span className={`text-[10px] mt-2 font-bold transition-colors duration-300 ${view === item.id ? 'text-[#5B544D]' : 'text-[#CEC3B8]'}`}>{item.label}</span>
+            <span className={`text-[9px] md:text-[10px] mt-1.5 font-bold transition-colors duration-300 ${view === item.id ? 'text-[#5B544D]' : 'text-[#CEC3B8]'}`}>{item.label}</span>
           </button>
         ))}
       </nav>
