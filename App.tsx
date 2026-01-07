@@ -87,6 +87,7 @@ const App: React.FC = () => {
       id: Date.now().toString(),
       foodId: food.id,
       foodName: food.name,
+      icon: food.icon,
       weight,
       timestamp: Date.now(),
       nutrients: {
@@ -119,10 +120,11 @@ const App: React.FC = () => {
 
   const clearLogs = () => {
     if (window.confirm('确定要清除今日所有记录吗？')) {
-      const otherLogs = logs.filter(log => new Date(log.timestamp).toISOString().split('T')[0] !== todayStr);
-      setLogs(otherLogs);
-      const otherExercise = exerciseLogs.filter(ex => new Date(ex.timestamp).toISOString().split('T')[0] !== todayStr);
-      setExerciseLogs(otherExercise);
+      const todayLogsSet = new Set(todayLogs.map(l => l.id));
+      setLogs(prev => prev.filter(l => !todayLogsSet.has(l.id)));
+      
+      const todayExSet = new Set(todayExercise.map(e => e.id));
+      setExerciseLogs(prev => prev.filter(e => !todayExSet.has(e.id)));
     }
   };
 

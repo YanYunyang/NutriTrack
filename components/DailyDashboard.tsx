@@ -114,7 +114,7 @@ const DailyDashboard: React.FC<Props> = ({ consumed, exerciseBurned = 0, goals, 
               <div key={log.id} className="bg-white px-6 py-5 rounded-[1.5rem] flex items-center justify-between group border border-[#F4F1EA] hover:border-[#84A59D]/30 transition-all">
                 <div className="flex items-center gap-5">
                    <div className="w-11 h-11 bg-[#FDFBF7] rounded-2xl flex items-center justify-center text-xl shadow-inner border border-[#F4EFEA]">
-                     {log.foodName.includes('鸡') ? '🍗' : log.foodName.includes('蛋') ? '🍳' : log.foodName.includes('菜') ? '🥗' : '🍱'}
+                     {log.icon || '🍱'}
                    </div>
                    <div>
                      <h4 className="text-[15px] font-bold text-[#5B544D]">{log.foodName}</h4>

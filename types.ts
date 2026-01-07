@@ -30,6 +30,7 @@ export interface MacroGoals {
 export interface FoodItem {
   id: string;
   name: string;
+  icon: string;
   calories: number; // per 100g
   protein: number;  // per 100g
   fat: number;      // per 100g
@@ -47,6 +48,7 @@ export interface DailyLogEntry {
   id: string;
   foodId: string;
   foodName: string;
+  icon: string;
   weight: number; // intake amount in grams
   timestamp: number;
   nutrients: {

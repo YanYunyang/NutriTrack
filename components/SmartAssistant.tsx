@@ -27,18 +27,18 @@ const SmartAssistant: React.FC<Props> = ({ consumed, goals, foodDb, logs, onAddF
   };
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      fetchAdvice();
-    }, 1500);
-    return () => clearTimeout(timer);
-  }, [logs.length]);
+    fetchAdvice();
+  }, [logs.length, goals.calories]);
 
   return (
     <div className="space-y-8 pb-4">
       <div className="bg-[#F4F1EA] rounded-[2rem] p-7 border border-[#E9E4DB] relative overflow-hidden">
         <div className="flex items-center gap-2.5 mb-5">
           <div className="w-8 h-8 bg-white rounded-xl flex items-center justify-center text-sm shadow-sm">🌱</div>
-          <h3 className="text-xs font-bold text-[#5B756E] tracking-[0.15em] uppercase">营养建议</h3>
+          <div className="flex flex-col">
+            <h3 className="text-xs font-bold text-[#5B756E] tracking-[0.15em] uppercase">营养建议</h3>
+            <span className="text-[8px] text-[#A5998D] font-bold uppercase tracking-widest mt-0.5">Offline Engine</span>
+          </div>
           <button 
             onClick={fetchAdvice}
             disabled={loading}
@@ -56,7 +56,7 @@ const SmartAssistant: React.FC<Props> = ({ consumed, goals, foodDb, logs, onAddF
               <div className="w-1.5 h-1.5 bg-[#CEC3B8] rounded-full animate-pulse [animation-delay:0.4s]" />
             </div>
           ) : (
-            advice || "正在根据您的饮食结构生成智能建议..."
+            advice || "正在根据您的饮食结构生成即时建议..."
           )}
         </div>
       </div>

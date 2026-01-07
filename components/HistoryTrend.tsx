@@ -13,7 +13,6 @@ const HistoryTrend: React.FC<Props> = ({ trendData }) => {
   const [activeTab, setActiveTab] = useState<'calories' | 'macros'>('calories');
 
   const maxCal = Math.max(...trendData.map(d => Math.max(d.calories, d.goal)), 2000);
-  // 为了让图表更清晰，宏量营养素的最大值需要同时考虑实测值和目标值
   const maxMacro = Math.max(...trendData.map(d => Math.max(d.protein, d.fat, d.carbs, d.proteinGoal, d.fatGoal, d.carbsGoal)), 100);
 
   useEffect(() => {
@@ -43,14 +42,14 @@ const HistoryTrend: React.FC<Props> = ({ trendData }) => {
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      {/* AI Weekly Insight */}
-      <div className="bg-[#84A59D] rounded-[2rem] p-7 shadow-xl shadow-[#84A59D]/10 relative overflow-hidden group">
-        <div className="absolute top-[-20%] right-[-10%] w-40 h-40 bg-white/10 rounded-full blur-3xl group-hover:bg-white/20 transition-all duration-1000" />
+      {/* Local Logic Analysis Card */}
+      <div className="bg-[#5B756E] rounded-[2rem] p-7 shadow-xl shadow-[#5B756E]/10 relative overflow-hidden group">
+        <div className="absolute top-[-20%] right-[-10%] w-40 h-40 bg-white/5 rounded-full blur-3xl" />
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-8 h-8 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center text-sm">✨</div>
-          <h3 className="text-[11px] font-bold text-white tracking-[0.2em] uppercase">AI 目标对比深度分析</h3>
+          <div className="w-8 h-8 bg-white/10 backdrop-blur-md rounded-xl flex items-center justify-center text-sm">📊</div>
+          <h3 className="text-[11px] font-bold text-white tracking-[0.2em] uppercase">本地饮食趋势评估</h3>
         </div>
-        <div className="text-[13px] text-white/90 leading-relaxed font-medium">
+        <div className="text-[13px] text-white/90 leading-relaxed font-medium whitespace-pre-line">
           {loading ? (
             <div className="flex gap-1.5 py-1">
               <div className="w-1.5 h-1.5 bg-white/50 rounded-full animate-pulse" />
@@ -58,7 +57,7 @@ const HistoryTrend: React.FC<Props> = ({ trendData }) => {
               <div className="w-1.5 h-1.5 bg-white/50 rounded-full animate-pulse [animation-delay:0.4s]" />
             </div>
           ) : (
-            analysis || "正在对比您的实际摄入与目标差异..."
+            analysis || "数据计算中..."
           )}
         </div>
       </div>
@@ -101,17 +100,14 @@ const HistoryTrend: React.FC<Props> = ({ trendData }) => {
                     </>
                   ) : (
                     <div className="flex items-end gap-[3px] h-full pb-1 relative w-full justify-center">
-                      {/* Protein Actual vs Goal Marker */}
                       <div className="flex flex-col items-center relative h-full justify-end">
                          <div className="w-1.5 bg-[#A8BCC9] rounded-full transition-all duration-700" style={{ height: `${(day.protein / maxMacro) * 100}%` }} />
                          <div className="absolute w-2 h-[2px] bg-[#5B544D]/20 z-10" style={{ bottom: `${(day.proteinGoal / maxMacro) * 100}%` }} />
                       </div>
-                      {/* Carbs Actual vs Goal Marker */}
                       <div className="flex flex-col items-center relative h-full justify-end">
                         <div className="w-1.5 bg-[#D9A78D] rounded-full transition-all duration-700 delay-100" style={{ height: `${(day.carbs / maxMacro) * 100}%` }} />
                         <div className="absolute w-2 h-[2px] bg-[#5B544D]/20 z-10" style={{ bottom: `${(day.carbsGoal / maxMacro) * 100}%` }} />
                       </div>
-                      {/* Fat Actual vs Goal Marker */}
                       <div className="flex flex-col items-center relative h-full justify-end">
                         <div className="w-1.5 bg-[#E9C46A] rounded-full transition-all duration-700 delay-200" style={{ height: `${(day.fat / maxMacro) * 100}%` }} />
                         <div className="absolute w-2 h-[2px] bg-[#5B544D]/20 z-10" style={{ bottom: `${(day.fatGoal / maxMacro) * 100}%` }} />
