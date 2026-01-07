@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { UserProfile, Gender, ActivityLevel, MacroGoals, ExerciseEntry } from '../types';
 import { calculateTDEE, calculateMacroGoalsFromCalories } from '../utils/calculators';
 
@@ -15,9 +15,9 @@ interface Props {
 }
 
 const PRESETS = [
-  { name: '平衡 (4:3:3)', p: 0.3, c: 0.4, f: 0.3 },
-  { name: '高蛋白 (4:4:2)', p: 0.4, c: 0.4, f: 0.2 },
-  { name: '低碳 (3:2:5)', p: 0.3, c: 0.2, f: 0.5 },
+  { name: '平衡饮食 (4:4:2)', p: 0.4, c: 0.4, f: 0.2 },
+  { name: '高能运动 (3:5:2)', p: 0.3, c: 0.5, f: 0.2 },
+  { name: '生酮减脂 (3:1:6)', p: 0.3, c: 0.1, f: 0.6 },
 ];
 
 const GoalSetter: React.FC<Props> = ({ 
@@ -29,7 +29,6 @@ const GoalSetter: React.FC<Props> = ({
   const [exerciseName, setExerciseName] = useState('');
   const [exerciseCals, setExerciseCals] = useState('');
 
-  // 辅助函数：根据营养素计算热量
   const calcCals = (p: number, c: number, f: number) => Math.round(p * 4 + c * 4 + f * 9);
 
   const updateProfile = (updates: Partial<UserProfile>) => {
@@ -55,213 +54,227 @@ const GoalSetter: React.FC<Props> = ({
     });
   };
 
-  const handleLogExercise = () => {
-    if (!exerciseCals) return;
-    onAddExercise(exerciseName || '未命名运动', parseInt(exerciseCals));
-    setExerciseName('');
-    setExerciseCals('');
-  };
+  // 动态配比分析计算
+  const macroRatios = useMemo(() => {
+    const total = goals.protein * 4 + goals.carbs * 4 + goals.fat * 9 || 1;
+    return {
+      p: Math.round((goals.protein * 4 / total) * 100),
+      c: Math.round((goals.carbs * 4 / total) * 100),
+      f: Math.round((goals.fat * 9 / total) * 100),
+    };
+  }, [goals]);
 
   return (
-    <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-500">
-      <div className="flex bg-[#F4F1EA] p-1.5 rounded-2xl border border-[#E9E4DB]">
-        <button 
-          className={`flex-1 py-2.5 rounded-xl text-[11px] font-bold tracking-tight transition-all ${activeTab === 'profile' ? 'bg-white shadow-sm text-[#84A59D]' : 'text-[#CEC3B8]'}`}
-          onClick={() => setActiveTab('profile')}
-        >
-          个人画像
-        </button>
-        <button 
-          className={`flex-1 py-2.5 rounded-xl text-[11px] font-bold tracking-tight transition-all ${activeTab === 'exercise' ? 'bg-white shadow-sm text-[#84A59D]' : 'text-[#CEC3B8]'}`}
-          onClick={() => setActiveTab('exercise')}
-        >
-          运动补充
-        </button>
-        <button 
-          className={`flex-1 py-2.5 rounded-xl text-[11px] font-bold tracking-tight transition-all ${activeTab === 'manual' ? 'bg-white shadow-sm text-[#84A59D]' : 'text-[#CEC3B8]'}`}
-          onClick={() => setActiveTab('manual')}
-        >
-          手动目标
-        </button>
+    <div className="space-y-6 animate-in slide-in-from-bottom-6 duration-500 pb-12">
+      {/* Premium Tab Selector */}
+      <div className="flex bg-[#F4F1EA] p-1.5 rounded-[1.75rem] border border-white shadow-sm mx-1">
+        {[
+          { id: 'profile', label: '身体画像', icon: '👤' },
+          { id: 'exercise', label: '额外消耗', icon: '🔥' },
+          { id: 'manual', label: '营养目标', icon: '🎯' }
+        ].map(tab => (
+          <button 
+            key={tab.id}
+            className={`flex-1 py-3 rounded-2xl flex items-center justify-center gap-2 text-[11px] font-black tracking-widest transition-all ${activeTab === tab.id ? 'bg-white shadow-md text-[#84A59D]' : 'text-[#CEC3B8]'}`}
+            onClick={() => setActiveTab(tab.id as any)}
+          >
+            <span>{tab.icon}</span>
+            {tab.label}
+          </button>
+        ))}
       </div>
 
       {activeTab === 'profile' && (
-        <div className="bg-white rounded-[2rem] p-7 border border-[#F4F1EA] shadow-sm space-y-6">
-          <h2 className="text-[13px] font-bold text-[#5B544D] mb-4 tracking-widest uppercase">身体基础信息</h2>
-          <div className="grid grid-cols-2 gap-5">
-            <div>
-              <label className="block text-[10px] font-bold text-[#CEC3B8] mb-2 uppercase tracking-widest">性别</label>
-              <select 
-                value={profile.gender}
-                onChange={(e) => updateProfile({ gender: e.target.value as Gender })}
-                className="w-full p-4 bg-[#FDFBF7] rounded-2xl border border-[#F4EFEA] text-[13px] font-bold text-[#5B544D] focus:ring-1 focus:ring-[#84A59D]"
+        <div className="space-y-6">
+          <div className="bg-white rounded-[2.5rem] p-8 border border-[#F4F1EA] shadow-sm space-y-8">
+            <h2 className="text-[11px] font-black text-[#A5998D] tracking-[0.3em] uppercase">基础生物信息</h2>
+            
+            {/* Gender Selection Cards */}
+            <div className="grid grid-cols-2 gap-4">
+              <button 
+                onClick={() => updateProfile({ gender: 'male' as any })}
+                className={`p-6 rounded-[2rem] border-2 transition-all flex flex-col items-center gap-3 ${profile.gender === 'male' ? 'border-[#84A59D] bg-[#F6F8F7]' : 'border-[#F4F1EA] grayscale opacity-50'}`}
               >
-                <option value={Gender.MALE}>先生</option>
-                <option value={Gender.FEMALE}>女士</option>
-              </select>
+                <span className="text-3xl">👨🏻‍💻</span>
+                <span className="text-[11px] font-black text-[#5B544D] uppercase">先生</span>
+              </button>
+              <button 
+                onClick={() => updateProfile({ gender: 'female' as any })}
+                className={`p-6 rounded-[2rem] border-2 transition-all flex flex-col items-center gap-3 ${profile.gender === 'female' ? 'border-[#D9A78D] bg-[#FAF4F2]' : 'border-[#F4F1EA] grayscale opacity-50'}`}
+              >
+                <span className="text-3xl">👩🏼‍💼</span>
+                <span className="text-[11px] font-black text-[#5B544D] uppercase">女士</span>
+              </button>
             </div>
-            <div>
-              <label className="block text-[10px] font-bold text-[#CEC3B8] mb-2 uppercase tracking-widest">年龄 (岁)</label>
-              <input 
-                type="number"
-                value={profile.age}
-                onChange={(e) => updateProfile({ age: parseInt(e.target.value) || 0 })}
-                className="w-full p-4 bg-[#FDFBF7] rounded-2xl border border-[#F4EFEA] text-[13px] font-bold text-[#5B544D] focus:ring-1 focus:ring-[#84A59D]"
-              />
+
+            <div className="grid grid-cols-2 gap-6">
+              {[
+                { label: '年龄', key: 'age', unit: '岁' },
+                { label: '身高', key: 'height', unit: 'cm' },
+                { label: '当前体重', key: 'weight', unit: 'kg' }
+              ].map(item => (
+                <div key={item.key} className="space-y-2">
+                  <label className="text-[10px] font-black text-[#CEC3B8] uppercase tracking-widest ml-1">{item.label}</label>
+                  <div className="relative">
+                    <input 
+                      type="number" value={(profile as any)[item.key]}
+                      onChange={(e) => updateProfile({ [item.key]: parseFloat(e.target.value) || 0 })}
+                      className="w-full p-4 bg-[#FDFBF7] rounded-2xl border border-[#F4F1EA] font-black text-[#5B544D] text-lg focus:ring-2 focus:ring-[#84A59D]/20 transition-all outline-none"
+                    />
+                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-[#CEC3B8]">{item.unit}</span>
+                  </div>
+                </div>
+              ))}
             </div>
-            <div>
-              <label className="block text-[10px] font-bold text-[#CEC3B8] mb-2 uppercase tracking-widest">体重 (kg)</label>
-              <input 
-                type="number"
-                value={profile.weight}
-                onChange={(e) => updateProfile({ weight: parseFloat(e.target.value) || 0 })}
-                className="w-full p-4 bg-[#FDFBF7] rounded-2xl border border-[#F4EFEA] text-[13px] font-bold text-[#5B544D] focus:ring-1 focus:ring-[#84A59D]"
-              />
+
+            <div className="space-y-2 pt-2">
+              <label className="text-[10px] font-black text-[#CEC3B8] uppercase tracking-widest ml-1">生活活跃程度</label>
+              <div className="space-y-2">
+                {[
+                  { v: 1.2, l: '久坐办公', desc: '极少运动' },
+                  { v: 1.375, l: '轻度活跃', desc: '每周 1-3 次运动' },
+                  { v: 1.55, l: '中度活跃', desc: '每周 3-5 次运动' },
+                  { v: 1.725, l: '高强度', desc: '专业训练/高强度工作' }
+                ].map(level => (
+                  <button 
+                    key={level.v}
+                    onClick={() => updateProfile({ activityLevel: level.v as any })}
+                    className={`w-full p-4 rounded-2xl border-2 transition-all flex justify-between items-center ${profile.activityLevel === level.v ? 'border-[#84A59D] bg-[#F6F8F7]' : 'border-[#F4F1EA] hover:border-[#84A59D]/30'}`}
+                  >
+                    <div className="text-left">
+                      <p className="text-[13px] font-black text-[#5B544D]">{level.l}</p>
+                      <p className="text-[10px] font-medium text-[#A5998D] uppercase mt-0.5">{level.desc}</p>
+                    </div>
+                    {profile.activityLevel === level.v && <div className="w-5 h-5 bg-[#84A59D] rounded-full flex items-center justify-center text-white"><svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="4" d="M5 13l4 4L19 7" /></svg></div>}
+                  </button>
+                ))}
+              </div>
             </div>
-            <div>
-              <label className="block text-[10px] font-bold text-[#CEC3B8] mb-2 uppercase tracking-widest">身高 (cm)</label>
-              <input 
-                type="number"
-                value={profile.height}
-                onChange={(e) => updateProfile({ height: parseFloat(e.target.value) || 0 })}
-                className="w-full p-4 bg-[#FDFBF7] rounded-2xl border border-[#F4EFEA] text-[13px] font-bold text-[#5B544D] focus:ring-1 focus:ring-[#84A59D]"
-              />
+
+            <div className="mt-8 pt-8 border-t border-[#F4EFEA] flex justify-between items-center">
+              <div>
+                <p className="text-[10px] text-[#CEC3B8] font-black tracking-widest uppercase">您的日均热量预算</p>
+                <div className="flex items-baseline gap-2 mt-1">
+                  <span className="text-4xl font-black text-[#84A59D] tracking-tight">{Math.round(calculateTDEE(profile))}</span>
+                  <span className="text-xs font-black text-[#A5998D]">kcal/天</span>
+                </div>
+              </div>
+              <button onClick={onSave} className="px-8 py-5 bg-[#84A59D] text-white rounded-[1.5rem] font-black text-[13px] shadow-xl shadow-[#84A59D]/30 active:scale-95 transition-all">确认并同步</button>
             </div>
-          </div>
-          <div>
-            <label className="block text-[10px] font-bold text-[#CEC3B8] mb-2 uppercase tracking-widest">生活运动强度</label>
-            <select 
-              value={profile.activityLevel}
-              onChange={(e) => updateProfile({ activityLevel: parseFloat(e.target.value) as ActivityLevel })}
-              className="w-full p-4 bg-[#FDFBF7] rounded-2xl border border-[#F4EFEA] text-[13px] font-bold text-[#5B544D] focus:ring-1 focus:ring-[#84A59D]"
-            >
-              <option value={ActivityLevel.SEDENTARY}>极少运动 (x1.2)</option>
-              <option value={ActivityLevel.LIGHTLY_ACTIVE}>轻度活动 (x1.375)</option>
-              <option value={ActivityLevel.MODERATELY_ACTIVE}>中度运动 (x1.55)</option>
-              <option value={ActivityLevel.VERY_ACTIVE}>高强度运动 (x1.725)</option>
-              <option value={ActivityLevel.EXTRA_ACTIVE}>运动员级 (x1.9)</option>
-            </select>
-          </div>
-          <div className="mt-8 pt-8 border-t border-[#F4EFEA] flex justify-between items-center">
-            <div>
-              <p className="text-[10px] text-[#CEC3B8] font-bold tracking-widest uppercase">计算基准 TDEE</p>
-              <p className="text-3xl font-bold text-[#84A59D]">{Math.round(calculateTDEE(profile))} <span className="text-xs font-normal text-[#A5998D]">kcal/日</span></p>
-            </div>
-            <button 
-              onClick={onSave}
-              className="px-6 py-4 bg-[#84A59D] text-white rounded-2xl font-bold text-[13px] hover:bg-[#5B756E] transition-all shadow-md active:scale-95"
-            >
-              更新同步
-            </button>
           </div>
         </div>
       )}
 
       {activeTab === 'exercise' && (
         <div className="space-y-6">
-          <div className="bg-white rounded-[2rem] p-7 border border-[#F4F1EA] shadow-sm">
-            <h2 className="text-[13px] font-bold text-[#5B544D] mb-6 tracking-widest uppercase">今日运动额外消耗</h2>
-            <div className="space-y-4">
+          <div className="bg-white rounded-[2.5rem] p-8 border border-[#F4F1EA] shadow-sm space-y-6">
+            <h2 className="text-[11px] font-black text-[#A5998D] tracking-[0.3em] uppercase">今日消耗补给</h2>
+            <div className="grid grid-cols-1 gap-4">
               <input 
-                type="text"
-                placeholder="运动名称 (如：跑步 30min)"
-                value={exerciseName}
+                type="text" placeholder="运动名称 (如: 晚间慢跑 5km)" value={exerciseName}
                 onChange={(e) => setExerciseName(e.target.value)}
-                className="w-full p-4 bg-[#FDFBF7] rounded-2xl border border-[#F4EFEA] text-[13px] font-medium text-[#5B544D] focus:ring-1 focus:ring-[#84A59D]"
+                className="w-full p-5 bg-[#FDFBF7] rounded-2xl border border-[#F4F1EA] text-sm font-bold text-[#5B544D] outline-none"
               />
-              <div className="flex gap-3">
-                <input 
-                  type="number"
-                  placeholder="热量消耗 (kcal)"
-                  value={exerciseCals}
-                  onChange={(e) => setExerciseCals(e.target.value)}
-                  className="flex-grow p-4 bg-[#FDFBF7] rounded-2xl border border-[#F4EFEA] text-[13px] font-bold text-[#5B544D] focus:ring-1 focus:ring-[#84A59D]"
-                />
+              <div className="flex gap-4">
+                <div className="flex-1 relative">
+                  <input 
+                    type="number" placeholder="消耗热量" value={exerciseCals}
+                    onChange={(e) => setExerciseCals(e.target.value)}
+                    className="w-full p-5 bg-[#FDFBF7] rounded-2xl border border-[#F4F1EA] text-lg font-black text-[#5B544D] outline-none"
+                  />
+                  <span className="absolute right-5 top-1/2 -translate-y-1/2 text-[10px] font-black text-[#CEC3B8]">KCAL</span>
+                </div>
                 <button 
-                  onClick={handleLogExercise}
-                  className="px-6 bg-[#D9A78D] text-white rounded-2xl font-bold text-[13px] hover:bg-[#C98A6D] transition-all"
+                  onClick={() => {
+                    if (!exerciseCals) return;
+                    onAddExercise(exerciseName || '运动补给', parseInt(exerciseCals));
+                    setExerciseName(''); setExerciseCals('');
+                  }}
+                  className="px-8 bg-[#D9A78D] text-white rounded-2xl font-black text-sm shadow-lg shadow-[#D9A78D]/20 active:scale-95"
                 >
                   记录
                 </button>
               </div>
             </div>
           </div>
-          <div className="space-y-3">
-            <h3 className="text-[10px] font-bold text-[#CEC3B8] px-1 tracking-widest uppercase">已记录运动</h3>
+          
+          <div className="space-y-4 px-2">
+            <h3 className="text-[10px] font-black text-[#CEC3B8] tracking-widest uppercase">今日运动列表</h3>
             {todayExercise.length === 0 ? (
-              <div className="py-12 text-center bg-[#FDFBF7] border border-dashed border-[#E9E4DB] rounded-[2rem]">
-                <p className="text-[11px] text-[#CEC3B8] font-bold">今天还没有运动，动起来吧！</p>
+              <div className="py-16 text-center bg-white border border-dashed border-[#F4F1EA] rounded-[2.5rem]">
+                <p className="text-[12px] text-[#CEC3B8] font-bold">暂无运动记录，适当运动更有利于代谢哦 🏃</p>
               </div>
             ) : (
-              todayExercise.map(ex => (
-                <div key={ex.id} className="bg-white px-6 py-4 rounded-[1.5rem] flex items-center justify-between border border-[#F4F1EA]">
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 bg-[#F4F1EA] rounded-full flex items-center justify-center text-lg">🏃</div>
-                    <div>
-                      <p className="text-[13px] font-bold text-[#5B544D]">{ex.name}</p>
-                      <p className="text-[11px] font-bold text-[#84A59D] mt-0.5">{ex.caloriesBurned} kcal</p>
+              <div className="space-y-3">
+                {todayExercise.map(ex => (
+                  <div key={ex.id} className="bg-white p-5 rounded-3xl flex items-center justify-between border border-[#F4F1EA] shadow-sm">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-[#FAF4F2] rounded-2xl flex items-center justify-center text-2xl shadow-inner">⚡</div>
+                      <div>
+                        <p className="text-[14px] font-black text-[#5B544D]">{ex.name}</p>
+                        <p className="text-[11px] font-black text-[#D9A78D] mt-0.5">-{ex.caloriesBurned} kcal</p>
+                      </div>
                     </div>
+                    <button onClick={() => onDeleteExercise(ex.id)} className="p-3 text-[#CEC3B8] hover:text-[#D9A78D] transition-colors"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" /></svg></button>
                   </div>
-                  <button onClick={() => onDeleteExercise(ex.id)} className="p-2 text-[#E9E4DB] hover:text-red-300">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
-                  </button>
-                </div>
-              ))
+                ))}
+              </div>
             )}
           </div>
         </div>
       )}
 
       {activeTab === 'manual' && (
-        <div className="bg-white rounded-[2rem] p-7 border border-[#F4F1EA] shadow-sm space-y-8">
+        <div className="bg-white rounded-[2.5rem] p-8 border border-[#F4F1EA] shadow-sm space-y-8">
           <div>
-            <h2 className="text-[13px] font-bold text-[#5B544D] mb-4 tracking-widest uppercase">精准营养调节</h2>
-            <div className="p-5 bg-[#FDFBF7] rounded-2xl border border-[#F4EFEA] text-center mb-6">
-               <p className="text-[10px] font-bold text-[#CEC3B8] uppercase tracking-widest">自动计算总热量</p>
-               <p className="text-4xl font-black text-[#5B544D] mt-1">{goals.calories} <span className="text-sm font-bold text-[#84A59D]">kcal</span></p>
-            </div>
+            <h2 className="text-[11px] font-black text-[#A5998D] tracking-[0.3em] uppercase mb-6">目标宏量营养配比</h2>
             
+            {/* Visual Ratio Bar - Interactive Pie Simulation */}
+            <div className="bg-[#FDFBF7] p-6 rounded-[2rem] border border-[#F4F1EA] mb-8">
+               <div className="flex h-4 rounded-full overflow-hidden shadow-inner mb-4">
+                 <div className="bg-[#A8BCC9] transition-all duration-700" style={{ width: `${macroRatios.p}%` }} />
+                 <div className="bg-[#D9A78D] transition-all duration-700" style={{ width: `${macroRatios.c}%` }} />
+                 <div className="bg-[#E9C46A] transition-all duration-700" style={{ width: `${macroRatios.f}%` }} />
+               </div>
+               <div className="grid grid-cols-3 gap-2 text-center">
+                 <div><p className="text-[10px] font-black text-[#A8BCC9] uppercase">蛋白 {macroRatios.p}%</p></div>
+                 <div><p className="text-[10px] font-black text-[#D9A78D] uppercase">碳水 {macroRatios.c}%</p></div>
+                 <div><p className="text-[10px] font-black text-[#E9C46A] uppercase">脂肪 {macroRatios.f}%</p></div>
+               </div>
+               <div className="mt-4 pt-4 border-t border-[#F4F1EA] text-center">
+                  <p className="text-[10px] font-black text-[#CEC3B8] uppercase">总热量目标</p>
+                  <p className="text-3xl font-black text-[#5B544D] mt-1">{goals.calories} <span className="text-sm font-black text-[#84A59D]">KCAL</span></p>
+               </div>
+            </div>
+
             <div className="space-y-6">
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-[9px] text-[#A8BCC9] font-black mb-2 uppercase text-center">蛋白质 (g)</label>
-                  <input 
-                    type="number"
-                    value={goals.protein}
-                    onChange={(e) => updateManualNutrient('protein', parseInt(e.target.value) || 0)}
-                    className="w-full p-4 bg-[#F4F7F9] rounded-2xl border-none text-[15px] text-center font-bold text-[#5B544D] focus:ring-2 focus:ring-[#A8BCC9]"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[9px] text-[#D9A78D] font-black mb-2 uppercase text-center">碳水 (g)</label>
-                  <input 
-                    type="number"
-                    value={goals.carbs}
-                    onChange={(e) => updateManualNutrient('carbs', parseInt(e.target.value) || 0)}
-                    className="w-full p-4 bg-[#FAF4F2] rounded-2xl border-none text-[15px] text-center font-bold text-[#5B544D] focus:ring-2 focus:ring-[#D9A78D]"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[9px] text-[#E9C46A] font-black mb-2 uppercase text-center">脂肪 (g)</label>
-                  <input 
-                    type="number"
-                    value={goals.fat}
-                    onChange={(e) => updateManualNutrient('fat', parseInt(e.target.value) || 0)}
-                    className="w-full p-4 bg-[#FAF8F1] rounded-2xl border-none text-[15px] text-center font-bold text-[#5B544D] focus:ring-2 focus:ring-[#E9C46A]"
-                  />
-                </div>
+              <div className="grid grid-cols-3 gap-3 md:gap-4">
+                {[
+                  { k: 'protein', l: '蛋白 (g)', c: 'bg-[#F4F7F9]', tc: 'text-[#A8BCC9]' },
+                  { k: 'carbs', l: '碳水 (g)', c: 'bg-[#FAF4F2]', tc: 'text-[#D9A78D]' },
+                  { k: 'fat', l: '脂肪 (g)', c: 'bg-[#FAF8F1]', tc: 'text-[#E9C46A]' }
+                ].map(field => (
+                  <div key={field.k}>
+                    <label className={`block text-[9px] font-black mb-2 uppercase text-center ${field.tc}`}>{field.l}</label>
+                    <input 
+                      type="number" value={goals[field.k as 'protein' | 'carbs' | 'fat']}
+                      onChange={(e) => updateManualNutrient(field.k as any, parseInt(e.target.value) || 0)}
+                      className={`w-full p-4 ${field.c} rounded-2xl border-none text-[15px] text-center font-black text-[#5B544D] outline-none ring-2 ring-transparent focus:ring-current transition-all`}
+                    />
+                  </div>
+                ))}
               </div>
 
-              <div className="pt-4 space-y-3">
-                <p className="text-[10px] font-bold text-[#CEC3B8] tracking-widest uppercase px-1">快速应用配比预设</p>
+              <div className="pt-2 space-y-3">
+                <p className="text-[10px] font-black text-[#CEC3B8] tracking-widest uppercase ml-1">专业推荐配比</p>
                 <div className="flex flex-wrap gap-2">
-                  {PRESETS.map(preset => (
+                  {PRESETS.map(p => (
                     <button
-                      key={preset.name}
-                      onClick={() => applyPreset(preset.p, preset.c, preset.f)}
-                      className="px-4 py-2 bg-[#F4F1EA] text-[#A5998D] text-[11px] font-bold rounded-full hover:bg-[#84A59D] hover:text-white transition-all border border-[#E9E4DB]"
+                      key={p.name}
+                      onClick={() => applyPreset(p.p, p.c, p.f)}
+                      className="px-5 py-2.5 bg-[#FDFBF7] text-[#A5998D] text-[11px] font-black rounded-full hover:bg-[#84A59D] hover:text-white transition-all border border-[#F4F1EA] active:scale-95"
                     >
-                      {preset.name}
+                      {p.name}
                     </button>
                   ))}
                 </div>
@@ -271,9 +284,9 @@ const GoalSetter: React.FC<Props> = ({
           
           <button 
             onClick={onSave}
-            className="w-full py-4 bg-[#5B544D] text-white rounded-2xl font-bold text-[13px] hover:bg-[#3E3833] transition-all shadow-md active:scale-95"
+            className="w-full py-5 bg-[#5B544D] text-white rounded-[1.75rem] font-black text-[14px] shadow-2xl shadow-[#5B544D]/20 active:scale-95 transition-all"
           >
-            完成设置
+            保存并应用新目标
           </button>
         </div>
       )}
