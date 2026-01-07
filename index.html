@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="zh-CN">
   <head>
@@ -16,38 +17,31 @@
     }
     </script>
 
-    <!-- PWA Meta Tags -->
     <link rel="manifest" href="./manifest.json" />
-    <meta name="theme-color" content="#84A59D" />
+    <meta name="theme-color" content="#FDFBF7" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="NutriTrack" />
     
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-      @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+      @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
       body {
         font-family: 'Plus Jakarta Sans', sans-serif;
-        background-color: #FDFBF7; /* Warm cream background */
-        color: #4A4A4A; /* Softer dark grey */
+        background-color: #FDFBF7;
+        color: #5B544D;
         -webkit-tap-highlight-color: transparent;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
         user-select: none;
       }
-      .scrollbar-hide::-webkit-scrollbar {
-        display: none;
-      }
-      .scrollbar-hide {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
-      }
-      main {
-        padding-bottom: env(safe-area-inset-bottom);
-      }
+      .scrollbar-hide::-webkit-scrollbar { display: none; }
+      .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+      input, select { font-size: 16px !important; } /* 防止移动端输入框自动放大 */
     </style>
   </head>
   <body>
     <div id="root"></div>
-    <!-- 关键修复：添加入口文件引用 -->
     <script type="module" src="./index.tsx"></script>
   </body>
 </html>

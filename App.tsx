@@ -50,17 +50,11 @@ const App: React.FC = () => {
     return saved ? pruneOldEntries(JSON.parse(saved)) : [];
   });
 
-  // 日期自动检查与数据清理
   useEffect(() => {
     const interval = setInterval(() => {
       const now = new Date();
-      if (now.getDate() !== currentDate.getDate()) {
-        setCurrentDate(now);
-        // 跨天时自动清理过期数据
-        setLogs(prev => pruneOldEntries(prev));
-        setExerciseLogs(prev => pruneOldEntries(prev));
-      }
-    }, 60000); // 每分钟检查一次
+      if (now.getDate() !== currentDate.getDate()) setCurrentDate(now);
+    }, 60000);
     return () => clearInterval(interval);
   }, [currentDate]);
 
@@ -100,121 +94,58 @@ const App: React.FC = () => {
     setLogs(prev => pruneOldEntries([newEntry, ...prev]));
   };
 
-  const addExercise = (name: string, calories: number) => {
-    const newEntry: ExerciseEntry = {
-      id: Date.now().toString(),
-      name,
-      caloriesBurned: Math.round(calories),
-      timestamp: Date.now()
-    };
-    setExerciseLogs(prev => pruneOldEntries([...prev, newEntry]));
-  };
-
-  const deleteExercise = (id: string) => {
-    setExerciseLogs(prev => prev.filter(ex => ex.id !== id));
-  };
-
-  const deleteLog = (id: string) => {
-    setLogs(prev => prev.filter(l => l.id !== id));
-  };
-
-  const clearLogs = () => {
-    if (window.confirm('确定要清除今日所有记录吗？')) {
-      const todayLogsSet = new Set(todayLogs.map(l => l.id));
-      setLogs(prev => prev.filter(l => !todayLogsSet.has(l.id)));
-      
-      const todayExSet = new Set(todayExercise.map(e => e.id));
-      setExerciseLogs(prev => prev.filter(e => !todayExSet.has(e.id)));
-    }
-  };
-
   return (
-    <div className="min-h-screen pb-28 max-w-lg mx-auto bg-[#FDFBF7] shadow-xl relative flex flex-col">
-      <header className="bg-white/60 backdrop-blur-md px-6 py-5 sticky top-0 z-50 border-b border-[#F4EFEA] flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 bg-[#84A59D] rounded-lg flex items-center justify-center">
-            <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707-.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
-          </div>
-          <div>
-            <h1 className="text-lg font-bold tracking-tight text-[#5B756E]">NutriTrack</h1>
-            <p className="text-[9px] text-[#A5998D] font-bold uppercase tracking-[0.15em]">{currentDate.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' })} Wellness</p>
-          </div>
+    <div className="min-h-screen pb-32 max-w-lg mx-auto bg-[#FDFBF7] relative flex flex-col font-medium">
+      <header className="px-8 py-7 flex items-center justify-between sticky top-0 bg-[#FDFBF7]/80 backdrop-blur-md z-40">
+        <div className="flex flex-col">
+          <span className="text-[10px] text-[#A5998D] font-black uppercase tracking-[0.3em]">NutriTrack Pro</span>
+          <h1 className="text-xl font-black text-[#5B544D] tracking-tight mt-1">
+            {view === 'dashboard' ? '今日营养概览' : view === 'history' ? '饮食趋势分析' : view === 'food' ? '食物库管理' : '个人偏好设置'}
+          </h1>
         </div>
-        <div className="w-9 h-9 rounded-full bg-[#F4F1EA] border border-[#E9E4DB] flex items-center justify-center text-[#84A59D]">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-        </div>
+        <button 
+          onClick={() => setView('goals')}
+          className="w-11 h-11 bg-white border border-[#F4F1EA] rounded-2xl flex items-center justify-center text-[#84A59D] shadow-sm active:scale-95 transition-all"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+        </button>
       </header>
 
-      <main className="p-6 flex-grow">
+      <main className="px-6 flex-grow">
         {view === 'dashboard' && (
-          <div className="space-y-10">
+          <div className="space-y-12 animate-in fade-in duration-500">
             <DailyDashboard 
               consumed={consumed} 
               exerciseBurned={totalBurned}
               goals={goals} 
               logs={todayLogs} 
-              onDeleteLog={deleteLog}
-              onClearLogs={clearLogs}
+              onDeleteLog={(id) => setLogs(l => l.filter(x => x.id !== id))}
+              onClearLogs={() => setLogs([])}
               onAddClick={() => setView('food')}
             />
-            <SmartAssistant 
-              consumed={consumed} 
-              goals={goals} 
-              foodDb={foodDb} 
-              logs={todayLogs}
-              onAddFood={(food) => setView('food')}
-            />
+            <SmartAssistant consumed={consumed} goals={goals} foodDb={foodDb} logs={todayLogs} onAddFood={() => setView('food')} />
           </div>
         )}
-
-        {view === 'history' && (
-          <HistoryTrend trendData={trendData} />
-        )}
-
-        {view === 'goals' && (
-          <GoalSetter 
-            profile={profile} 
-            setProfile={setProfile} 
-            goals={goals} 
-            setGoals={setGoals} 
-            todayExercise={todayExercise}
-            onAddExercise={addExercise}
-            onDeleteExercise={deleteExercise}
-            onSave={() => setView('dashboard')}
-          />
-        )}
-
-        {view === 'food' && (
-          <FoodManager 
-            foodDb={foodDb} 
-            setFoodDb={setFoodDb} 
-            onLogFood={addLog}
-            onBack={() => setView('dashboard')}
-          />
-        )}
+        {view === 'history' && <HistoryTrend trendData={trendData} />}
+        {view === 'food' && <FoodManager foodDb={foodDb} setFoodDb={setFoodDb} onLogFood={addLog} onBack={() => setView('dashboard')} />}
+        {view === 'goals' && <GoalSetter profile={profile} setProfile={setProfile} goals={goals} setGoals={setGoals} todayExercise={todayExercise} onAddExercise={(n, c) => setExerciseLogs(p => [...p, { id: Date.now().toString(), name: n, caloriesBurned: c, timestamp: Date.now() }])} onDeleteExercise={(id) => setExerciseLogs(e => e.filter(x => x.id !== id))} onSave={() => setView('dashboard')} />}
       </main>
 
-      <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-sm bg-white/80 backdrop-blur-xl border border-[#F4EFEA] px-2 py-2 flex justify-around items-center rounded-3xl shadow-[0_15px_40px_rgba(165,153,141,0.12)] z-50">
-        <button onClick={() => setView('dashboard')} className={`relative flex-1 py-3 flex flex-col items-center transition-all duration-300 ${view === 'dashboard' ? 'text-[#84A59D]' : 'text-[#CEC3B8]'}`}>
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
-          <span className="text-[9px] mt-1 font-bold">概览</span>
-          {view === 'dashboard' && <div className="absolute -bottom-1 w-1 h-1 bg-[#84A59D] rounded-full" />}
-        </button>
-        <button onClick={() => setView('history')} className={`relative flex-1 py-3 flex flex-col items-center transition-all duration-300 ${view === 'history' ? 'text-[#84A59D]' : 'text-[#CEC3B8]'}`}>
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-          <span className="text-[9px] mt-1 font-bold">趋势</span>
-          {view === 'history' && <div className="absolute -bottom-1 w-1 h-1 bg-[#84A59D] rounded-full" />}
-        </button>
-        <button onClick={() => setView('food')} className={`relative flex-1 py-3 flex flex-col items-center transition-all duration-300 ${view === 'food' ? 'text-[#84A59D]' : 'text-[#CEC3B8]'}`}>
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-          <span className="text-[9px] mt-1 font-bold">食物</span>
-          {view === 'food' && <div className="absolute -bottom-1 w-1 h-1 bg-[#84A59D] rounded-full" />}
-        </button>
-        <button onClick={() => setView('goals')} className={`relative flex-1 py-3 flex flex-col items-center transition-all duration-300 ${view === 'goals' ? 'text-[#84A59D]' : 'text-[#CEC3B8]'}`}>
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-          <span className="text-[9px] mt-1 font-bold">我的</span>
-          {view === 'goals' && <div className="absolute -bottom-1 w-1 h-1 bg-[#84A59D] rounded-full" />}
-        </button>
+      <nav className="fixed bottom-8 left-1/2 -translate-x-1/2 w-[90%] max-w-sm bg-[#5B544D] px-2 py-2 flex justify-around items-center rounded-3xl shadow-2xl z-50">
+        {[
+          { id: 'dashboard', label: '主页', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
+          { id: 'history', label: '趋势', icon: 'M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z' },
+          { id: 'food', label: '记录', icon: 'M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z' }
+        ].map(item => (
+          <button 
+            key={item.id}
+            onClick={() => setView(item.id as any)}
+            className={`flex-1 flex flex-col items-center py-2.5 rounded-2xl transition-all duration-300 ${view === item.id ? 'bg-[#84A59D] text-white' : 'text-[#CEC3B8]'}`}
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.2" d={item.icon} /></svg>
+            <span className="text-[9px] mt-1 font-black tracking-widest">{item.label}</span>
+          </button>
+        ))}
       </nav>
     </div>
   );

@@ -60,24 +60,24 @@ const FoodManager: React.FC<Props> = ({ foodDb, setFoodDb, onLogFood, onBack }) 
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
-      <div className="flex gap-4">
+      <div className="flex items-center gap-3">
         <div className="relative flex-1">
           <input 
             type="text" 
             placeholder="搜索您的私人食物库..." 
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-12 pr-4 py-4.5 bg-white border border-[#F4F1EA] shadow-sm rounded-2xl text-[14px] font-bold text-[#5B544D] placeholder-[#CEC3B8] focus:ring-2 focus:ring-[#84A59D]/20 outline-none transition-all"
+            className="w-full pl-11 pr-4 py-3.5 bg-white border border-[#F4F1EA] shadow-sm rounded-2xl text-[14px] font-bold text-[#5B544D] placeholder-[#CEC3B8] focus:ring-2 focus:ring-[#84A59D]/20 outline-none transition-all"
           />
-          <svg className="w-5 h-5 absolute left-4.5 top-1/2 -translate-y-1/2 text-[#CEC3B8]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-[#CEC3B8]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
         </div>
         <button 
           onClick={() => setShowAddForm(true)}
-          className="w-14 h-14 flex items-center justify-center bg-[#84A59D] text-white rounded-2xl shadow-xl shadow-[#84A59D]/30 hover:bg-[#5B756E] transition-all active:scale-90"
+          className="shrink-0 w-[52px] h-[52px] flex items-center justify-center bg-[#84A59D] text-white rounded-2xl shadow-lg shadow-[#84A59D]/20 hover:bg-[#5B756E] transition-all active:scale-90"
         >
-          <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" />
           </svg>
         </button>
@@ -140,7 +140,7 @@ const FoodManager: React.FC<Props> = ({ foodDb, setFoodDb, onLogFood, onBack }) 
                 <label className="block text-[10px] font-black text-[#CEC3B8] uppercase tracking-[0.2em] ml-1">食物名称</label>
                 <input 
                   placeholder="如：自制全麦煎饼" 
-                  className="w-full p-5 bg-[#FDFBF7] rounded-2xl border border-[#F4F1EA] text-[14px] font-bold text-[#5B544D] outline-none focus:ring-2 focus:ring-[#84A59D]/20 transition-all"
+                  className="w-full p-4 bg-[#FDFBF7] rounded-2xl border border-[#F4F1EA] text-[14px] font-bold text-[#5B544D] outline-none focus:ring-2 focus:ring-[#84A59D]/20 transition-all"
                   value={newFood.name}
                   onChange={e => setNewFood({...newFood, name: e.target.value})}
                 />
@@ -151,7 +151,7 @@ const FoodManager: React.FC<Props> = ({ foodDb, setFoodDb, onLogFood, onBack }) 
                   <label className="text-[10px] font-black text-[#CEC3B8] uppercase tracking-widest ml-1">热量 (kcal)</label>
                   <input 
                     type="number" placeholder="0" 
-                    className="w-full p-4.5 bg-[#FDFBF7] rounded-2xl border border-[#F4F1EA] text-[14px] font-bold text-[#5B544D] outline-none focus:border-[#84A59D]/50"
+                    className="w-full p-4 bg-[#FDFBF7] rounded-2xl border border-[#F4F1EA] text-[14px] font-bold text-[#5B544D] outline-none focus:border-[#84A59D]/50"
                     value={newFood.calories || ''}
                     onChange={e => setNewFood({...newFood, calories: parseFloat(e.target.value)})}
                   />
@@ -160,7 +160,7 @@ const FoodManager: React.FC<Props> = ({ foodDb, setFoodDb, onLogFood, onBack }) 
                   <label className="text-[10px] font-black text-[#CEC3B8] uppercase tracking-widest ml-1">蛋白 (g)</label>
                   <input 
                     type="number" placeholder="0" 
-                    className="w-full p-4.5 bg-[#FDFBF7] rounded-2xl border border-[#F4F1EA] text-[14px] font-bold text-[#5B544D] outline-none"
+                    className="w-full p-4 bg-[#FDFBF7] rounded-2xl border border-[#F4F1EA] text-[14px] font-bold text-[#5B544D] outline-none"
                     value={newFood.protein || ''}
                     onChange={e => setNewFood({...newFood, protein: parseFloat(e.target.value)})}
                   />
@@ -169,7 +169,7 @@ const FoodManager: React.FC<Props> = ({ foodDb, setFoodDb, onLogFood, onBack }) 
                   <label className="text-[10px] font-black text-[#CEC3B8] uppercase tracking-widest ml-1">脂肪 (g)</label>
                   <input 
                     type="number" placeholder="0" 
-                    className="w-full p-4.5 bg-[#FDFBF7] rounded-2xl border border-[#F4F1EA] text-[14px] font-bold text-[#5B544D] outline-none"
+                    className="w-full p-4 bg-[#FDFBF7] rounded-2xl border border-[#F4F1EA] text-[14px] font-bold text-[#5B544D] outline-none"
                     value={newFood.fat || ''}
                     onChange={e => setNewFood({...newFood, fat: parseFloat(e.target.value)})}
                   />
@@ -178,7 +178,7 @@ const FoodManager: React.FC<Props> = ({ foodDb, setFoodDb, onLogFood, onBack }) 
                   <label className="text-[10px] font-black text-[#CEC3B8] uppercase tracking-widest ml-1">碳水 (g)</label>
                   <input 
                     type="number" placeholder="0" 
-                    className="w-full p-4.5 bg-[#FDFBF7] rounded-2xl border border-[#F4F1EA] text-[14px] font-bold text-[#5B544D] outline-none"
+                    className="w-full p-4 bg-[#FDFBF7] rounded-2xl border border-[#F4F1EA] text-[14px] font-bold text-[#5B544D] outline-none"
                     value={newFood.carbs || ''}
                     onChange={e => setNewFood({...newFood, carbs: parseFloat(e.target.value)})}
                   />
@@ -186,15 +186,15 @@ const FoodManager: React.FC<Props> = ({ foodDb, setFoodDb, onLogFood, onBack }) 
               </div>
             </div>
 
-            <div className="flex gap-4 pt-2">
-              <button onClick={() => setShowAddForm(false)} className="flex-1 py-4.5 bg-[#F4F1EA] text-[#A5998D] rounded-2xl font-black text-[14px]">取消</button>
-              <button onClick={handleAddFood} className="flex-1 py-4.5 bg-[#84A59D] text-white rounded-2xl font-black text-[14px] shadow-xl shadow-[#84A59D]/25">确认新增</button>
+            <div className="flex gap-4 pt-4">
+              <button onClick={() => setShowAddForm(false)} className="flex-1 py-4 bg-[#F4F1EA] text-[#A5998D] rounded-2xl font-black text-[14px]">取消</button>
+              <button onClick={handleAddFood} className="flex-1 py-4 bg-[#84A59D] text-white rounded-2xl font-black text-[14px] shadow-xl shadow-[#84A59D]/25">确认新增</button>
             </div>
           </div>
         </div>
       )}
 
-      <div className="space-y-4">
+      <div className="space-y-4 pb-4">
         {filteredFood.length === 0 ? (
           <div className="py-24 text-center bg-white rounded-[2.5rem] border border-dashed border-[#F4F1EA]">
              <p className="text-[11px] font-black text-[#CEC3B8] uppercase tracking-[0.3em]">发现新的美味并添加它</p>
