@@ -2,6 +2,15 @@
 import { UserProfile, MacroGoals, DailyLogEntry, FoodItem, TrendDay, Gender } from '../types';
 
 /**
+ * 格式化本地日期为 YYYY-MM-DD
+ */
+const toLocalISOString = (date: Date) => {
+  const offset = date.getTimezoneOffset();
+  const localDate = new Date(date.getTime() - (offset * 60 * 1000));
+  return localDate.toISOString().split('T')[0];
+};
+
+/**
  * Calculate BMR using Mifflin-St Jeor Equation
  */
 export const calculateBMR = (profile: UserProfile): number => {
@@ -63,7 +72,7 @@ export const pruneOldEntries = <T extends { timestamp: number }>(entries: T[]): 
 };
 
 /**
- * Get data for the last 7 days
+ * Get data for the last 7 days - Fixed timezone issue
  */
 export const getWeeklyTrendData = (logs: DailyLogEntry[], goals: MacroGoals): TrendDay[] => {
   const trend: TrendDay[] = [];
@@ -71,13 +80,12 @@ export const getWeeklyTrendData = (logs: DailyLogEntry[], goals: MacroGoals): Tr
   
   for (let i = 6; i >= 0; i--) {
     const d = new Date();
-    d.setHours(0, 0, 0, 0);
     d.setDate(now.getDate() - i);
-    const dateStr = d.toISOString().split('T')[0];
+    const dateStr = toLocalISOString(d);
     const dayLabel = d.toLocaleDateString('zh-CN', { weekday: 'short' });
     
     const dayLogs = logs.filter(log => {
-      const logDate = new Date(log.timestamp).toISOString().split('T')[0];
+      const logDate = toLocalISOString(new Date(log.timestamp));
       return logDate === dateStr;
     });
     
