@@ -62,6 +62,9 @@ export interface TrendDay {
   calories: number;
   goal: number;
   protein: number;
+  proteinGoal: number;
   fat: number;
+  fatGoal: number;
   carbs: number;
+  carbsGoal: number;
 }

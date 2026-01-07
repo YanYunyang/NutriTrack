@@ -8,7 +8,8 @@ import {
   calculateTDEE, 
   calculateMacroGoalsFromCalories,
   calculateConsumedNutrients,
-  getWeeklyTrendData
+  getWeeklyTrendData,
+  pruneOldEntries
 } from './utils/calculators';
 
 // Components
@@ -20,6 +21,7 @@ import HistoryTrend from './components/HistoryTrend';
 
 const App: React.FC = () => {
   const [view, setView] = useState<'dashboard' | 'goals' | 'food' | 'history'>('dashboard');
+  const [currentDate, setCurrentDate] = useState(new Date());
   
   const [profile, setProfile] = useState<UserProfile>(() => {
     const saved = localStorage.getItem(STORAGE_KEYS.PROFILE);
@@ -40,13 +42,27 @@ const App: React.FC = () => {
 
   const [logs, setLogs] = useState<DailyLogEntry[]>(() => {
     const saved = localStorage.getItem(STORAGE_KEYS.LOGS);
-    return saved ? JSON.parse(saved) : [];
+    return saved ? pruneOldEntries(JSON.parse(saved)) : [];
   });
 
   const [exerciseLogs, setExerciseLogs] = useState<ExerciseEntry[]>(() => {
     const saved = localStorage.getItem(STORAGE_KEYS.EXERCISE_LOGS);
-    return saved ? JSON.parse(saved) : [];
+    return saved ? pruneOldEntries(JSON.parse(saved)) : [];
   });
+
+  // 日期自动检查与数据清理
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const now = new Date();
+      if (now.getDate() !== currentDate.getDate()) {
+        setCurrentDate(now);
+        // 跨天时自动清理过期数据
+        setLogs(prev => pruneOldEntries(prev));
+        setExerciseLogs(prev => pruneOldEntries(prev));
+      }
+    }, 60000); // 每分钟检查一次
+    return () => clearInterval(interval);
+  }, [currentDate]);
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.PROFILE, JSON.stringify(profile));
@@ -56,12 +72,12 @@ const App: React.FC = () => {
     localStorage.setItem(STORAGE_KEYS.EXERCISE_LOGS, JSON.stringify(exerciseLogs));
   }, [profile, goals, foodDb, logs, exerciseLogs]);
 
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = currentDate.toISOString().split('T')[0];
   const todayLogs = useMemo(() => logs.filter(log => new Date(log.timestamp).toISOString().split('T')[0] === todayStr), [logs, todayStr]);
   const todayExercise = useMemo(() => exerciseLogs.filter(ex => new Date(ex.timestamp).toISOString().split('T')[0] === todayStr), [exerciseLogs, todayStr]);
   
   const consumed = useMemo(() => calculateConsumedNutrients(todayLogs), [todayLogs]);
-  const totalBurned = useMemo(() => todayExercise.reduce((acc, ex) => acc + ex.caloriesBurned, 0), [todayExercise]);
+  const totalBurned = useMemo(() => Math.round(todayExercise.reduce((acc, ex) => acc + ex.caloriesBurned, 0)), [todayExercise]);
   
   const trendData = useMemo(() => getWeeklyTrendData(logs, goals), [logs, goals]);
 
@@ -74,23 +90,23 @@ const App: React.FC = () => {
       weight,
       timestamp: Date.now(),
       nutrients: {
-        calories: food.calories * factor,
+        calories: Math.round(food.calories * factor),
         protein: food.protein * factor,
         fat: food.fat * factor,
         carbs: food.carbs * factor,
       }
     };
-    setLogs(prev => [newEntry, ...prev]);
+    setLogs(prev => pruneOldEntries([newEntry, ...prev]));
   };
 
   const addExercise = (name: string, calories: number) => {
     const newEntry: ExerciseEntry = {
       id: Date.now().toString(),
       name,
-      caloriesBurned: calories,
+      caloriesBurned: Math.round(calories),
       timestamp: Date.now()
     };
-    setExerciseLogs(prev => [...prev, newEntry]);
+    setExerciseLogs(prev => pruneOldEntries([...prev, newEntry]));
   };
 
   const deleteExercise = (id: string) => {
@@ -112,7 +128,6 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen pb-28 max-w-lg mx-auto bg-[#FDFBF7] shadow-xl relative flex flex-col">
-      {/* Redesigned Minimal Header */}
       <header className="bg-white/60 backdrop-blur-md px-6 py-5 sticky top-0 z-50 border-b border-[#F4EFEA] flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="w-7 h-7 bg-[#84A59D] rounded-lg flex items-center justify-center">
@@ -120,7 +135,7 @@ const App: React.FC = () => {
           </div>
           <div>
             <h1 className="text-lg font-bold tracking-tight text-[#5B756E]">NutriTrack</h1>
-            <p className="text-[9px] text-[#A5998D] font-bold uppercase tracking-[0.15em]">Daily Wellness</p>
+            <p className="text-[9px] text-[#A5998D] font-bold uppercase tracking-[0.15em]">{currentDate.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' })} Wellness</p>
           </div>
         </div>
         <div className="w-9 h-9 rounded-full bg-[#F4F1EA] border border-[#E9E4DB] flex items-center justify-center text-[#84A59D]">
@@ -128,7 +143,6 @@ const App: React.FC = () => {
         </div>
       </header>
 
-      {/* Main Content Area */}
       <main className="p-6 flex-grow">
         {view === 'dashboard' && (
           <div className="space-y-10">
@@ -139,6 +153,7 @@ const App: React.FC = () => {
               logs={todayLogs} 
               onDeleteLog={deleteLog}
               onClearLogs={clearLogs}
+              onAddClick={() => setView('food')}
             />
             <SmartAssistant 
               consumed={consumed} 
@@ -177,39 +192,23 @@ const App: React.FC = () => {
         )}
       </main>
 
-      {/* Warm Floating Navigation */}
       <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-sm bg-white/80 backdrop-blur-xl border border-[#F4EFEA] px-2 py-2 flex justify-around items-center rounded-3xl shadow-[0_15px_40px_rgba(165,153,141,0.12)] z-50">
-        <button 
-          onClick={() => setView('dashboard')}
-          className={`relative flex-1 py-3 flex flex-col items-center transition-all duration-300 ${view === 'dashboard' ? 'text-[#84A59D]' : 'text-[#CEC3B8]'}`}
-        >
+        <button onClick={() => setView('dashboard')} className={`relative flex-1 py-3 flex flex-col items-center transition-all duration-300 ${view === 'dashboard' ? 'text-[#84A59D]' : 'text-[#CEC3B8]'}`}>
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
           <span className="text-[9px] mt-1 font-bold">概览</span>
           {view === 'dashboard' && <div className="absolute -bottom-1 w-1 h-1 bg-[#84A59D] rounded-full" />}
         </button>
-        
-        <button 
-          onClick={() => setView('history')}
-          className={`relative flex-1 py-3 flex flex-col items-center transition-all duration-300 ${view === 'history' ? 'text-[#84A59D]' : 'text-[#CEC3B8]'}`}
-        >
+        <button onClick={() => setView('history')} className={`relative flex-1 py-3 flex flex-col items-center transition-all duration-300 ${view === 'history' ? 'text-[#84A59D]' : 'text-[#CEC3B8]'}`}>
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
           <span className="text-[9px] mt-1 font-bold">趋势</span>
           {view === 'history' && <div className="absolute -bottom-1 w-1 h-1 bg-[#84A59D] rounded-full" />}
         </button>
-
-        <button 
-          onClick={() => setView('food')}
-          className={`relative flex-1 py-3 flex flex-col items-center transition-all duration-300 ${view === 'food' ? 'text-[#84A59D]' : 'text-[#CEC3B8]'}`}
-        >
+        <button onClick={() => setView('food')} className={`relative flex-1 py-3 flex flex-col items-center transition-all duration-300 ${view === 'food' ? 'text-[#84A59D]' : 'text-[#CEC3B8]'}`}>
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
           <span className="text-[9px] mt-1 font-bold">食物</span>
           {view === 'food' && <div className="absolute -bottom-1 w-1 h-1 bg-[#84A59D] rounded-full" />}
         </button>
-
-        <button 
-          onClick={() => setView('goals')}
-          className={`relative flex-1 py-3 flex flex-col items-center transition-all duration-300 ${view === 'goals' ? 'text-[#84A59D]' : 'text-[#CEC3B8]'}`}
-        >
+        <button onClick={() => setView('goals')} className={`relative flex-1 py-3 flex flex-col items-center transition-all duration-300 ${view === 'goals' ? 'text-[#84A59D]' : 'text-[#CEC3B8]'}`}>
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
           <span className="text-[9px] mt-1 font-bold">我的</span>
           {view === 'goals' && <div className="absolute -bottom-1 w-1 h-1 bg-[#84A59D] rounded-full" />}

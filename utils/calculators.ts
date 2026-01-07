@@ -14,35 +14,52 @@ export const calculateBMR = (profile: UserProfile): number => {
 };
 
 /**
- * Calculate TDEE
+ * Calculate TDEE - Rounded
  */
 export const calculateTDEE = (profile: UserProfile): number => {
   const bmr = calculateBMR(profile);
-  return bmr * profile.activityLevel;
+  return Math.round(bmr * profile.activityLevel);
 };
 
 /**
  * Default distribution: 30% Protein, 40% Carbs, 30% Fat
  */
 export const calculateMacroGoalsFromCalories = (calories: number): MacroGoals => {
+  const roundedCals = Math.round(calories);
   return {
-    calories,
-    protein: Math.round((calories * 0.3) / 4),
-    carbs: Math.round((calories * 0.4) / 4),
-    fat: Math.round((calories * 0.3) / 9),
+    calories: roundedCals,
+    protein: Math.round((roundedCals * 0.3) / 4),
+    carbs: Math.round((roundedCals * 0.4) / 4),
+    fat: Math.round((roundedCals * 0.3) / 9),
   };
 };
 
 /**
- * Sum nutrients for a specific set of logs
+ * Sum nutrients for a specific set of logs - Calories Rounded
  */
 export const calculateConsumedNutrients = (logs: DailyLogEntry[]) => {
-  return logs.reduce((acc, log) => ({
+  const raw = logs.reduce((acc, log) => ({
     calories: acc.calories + log.nutrients.calories,
     protein: acc.protein + log.nutrients.protein,
     fat: acc.fat + log.nutrients.fat,
     carbs: acc.carbs + log.nutrients.carbs,
   }), { calories: 0, protein: 0, fat: 0, carbs: 0 });
+  
+  return {
+    ...raw,
+    calories: Math.round(raw.calories)
+  };
+};
+
+/**
+ * Prune data older than 7 days
+ */
+export const pruneOldEntries = <T extends { timestamp: number }>(entries: T[]): T[] => {
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setHours(0, 0, 0, 0);
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  const cutoff = sevenDaysAgo.getTime();
+  return entries.filter(entry => entry.timestamp >= cutoff);
 };
 
 /**
@@ -54,6 +71,7 @@ export const getWeeklyTrendData = (logs: DailyLogEntry[], goals: MacroGoals): Tr
   
   for (let i = 6; i >= 0; i--) {
     const d = new Date();
+    d.setHours(0, 0, 0, 0);
     d.setDate(now.getDate() - i);
     const dateStr = d.toISOString().split('T')[0];
     const dayLabel = d.toLocaleDateString('zh-CN', { weekday: 'short' });
@@ -67,11 +85,14 @@ export const getWeeklyTrendData = (logs: DailyLogEntry[], goals: MacroGoals): Tr
     
     trend.push({
       dateLabel: i === 0 ? '今日' : dayLabel,
-      calories: Math.round(totals.calories),
+      calories: totals.calories,
       goal: goals.calories,
       protein: totals.protein,
+      proteinGoal: goals.protein,
       fat: totals.fat,
-      carbs: totals.carbs
+      fatGoal: goals.fat,
+      carbs: totals.carbs,
+      carbsGoal: goals.carbs
     });
   }
   
