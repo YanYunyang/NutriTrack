@@ -37,8 +37,17 @@ const App: React.FC = () => {
 
   const [foodDb, setFoodDb] = useState<FoodItem[]>(() => {
     const saved = localStorage.getItem(STORAGE_KEYS.FOOD_DB);
-    const initialList: FoodItem[] = saved ? JSON.parse(saved) : INITIAL_FOOD_DB;
-    return initialList.map(item => {
+    let currentList: FoodItem[] = saved ? JSON.parse(saved) : [...INITIAL_FOOD_DB];
+    
+    // 核心修复逻辑：将代码中新增的初始食物合并到已有的缓存列表中（通过 ID 去重）
+    const existingIds = new Set(currentList.map(item => item.id));
+    const newItems = INITIAL_FOOD_DB.filter(item => !existingIds.has(item.id));
+    
+    if (newItems.length > 0) {
+      currentList = [...currentList, ...newItems];
+    }
+
+    return currentList.map(item => {
       const reference = INITIAL_FOOD_DB.find(f => f.id === item.id);
       if (reference && (!item.icon || item.icon === '🍱')) {
         return { ...item, icon: reference.icon };
