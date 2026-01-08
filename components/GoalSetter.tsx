@@ -71,7 +71,7 @@ const GoalSetter: React.FC<Props> = ({
           { id: 'profile', label: '基础', icon: '👤' },
           { id: 'exercise', label: '运动', icon: '🔥' },
           { id: 'manual', label: '目标', icon: '🎯' },
-          { id: 'about', label: '关于', icon: '✨' }
+          { id: 'about', label: '品牌', icon: '🏷️' }
         ].map(tab => (
           <button 
             key={tab.id}
@@ -91,15 +91,15 @@ const GoalSetter: React.FC<Props> = ({
             
             <div className="grid grid-cols-2 gap-4">
               <button 
-                onClick={() => updateProfile({ gender: 'male' as any })}
-                className={`p-6 rounded-[2rem] border-2 transition-all flex flex-col items-center gap-3 ${profile.gender === 'male' ? 'border-[#84A59D] bg-[#F6F8F7]' : 'border-[#F4F1EA] grayscale opacity-50'}`}
+                onClick={() => updateProfile({ gender: Gender.MALE })}
+                className={`p-6 rounded-[2rem] border-2 transition-all flex flex-col items-center gap-3 ${profile.gender === Gender.MALE ? 'border-[#84A59D] bg-[#F6F8F7]' : 'border-[#F4F1EA] grayscale opacity-50'}`}
               >
                 <span className="text-3xl">👨🏻‍💻</span>
                 <span className="text-[11px] font-black text-[#5B544D] uppercase">先生</span>
               </button>
               <button 
-                onClick={() => updateProfile({ gender: 'female' as any })}
-                className={`p-6 rounded-[2rem] border-2 transition-all flex flex-col items-center gap-3 ${profile.gender === 'female' ? 'border-[#D9A78D] bg-[#FAF4F2]' : 'border-[#F4F1EA] grayscale opacity-50'}`}
+                onClick={() => updateProfile({ gender: Gender.FEMALE })}
+                className={`p-6 rounded-[2rem] border-2 transition-all flex flex-col items-center gap-3 ${profile.gender === Gender.FEMALE ? 'border-[#D9A78D] bg-[#FAF4F2]' : 'border-[#F4F1EA] grayscale opacity-50'}`}
               >
                 <span className="text-3xl">👩🏼‍💼</span>
                 <span className="text-[11px] font-black text-[#5B544D] uppercase">女士</span>
@@ -158,7 +158,7 @@ const GoalSetter: React.FC<Props> = ({
                   <span className="text-[10px] font-black text-[#A5998D]">kcal</span>
                 </div>
               </div>
-              <button onClick={onSave} className="px-6 py-4 bg-[#84A59D] text-white rounded-[1.25rem] font-black text-[12px] shadow-xl shadow-[#84A59D]/30 active:scale-95 transition-all">同步</button>
+              <button onClick={onSave} className="px-6 py-4 bg-[#84A59D] text-white rounded-[1.25rem] font-black text-[12px] shadow-xl shadow-[#84A59D]/30 active:scale-95 transition-all">保存</button>
             </div>
           </div>
         </div>
@@ -303,24 +303,24 @@ const GoalSetter: React.FC<Props> = ({
               </div>
               
               <div className="space-y-2">
-                <h3 className="text-xl font-black text-[#5B544D] tracking-tight">NutriTrack Pro</h3>
-                <p className="text-[10px] font-black text-[#84A59D] tracking-[0.3em] uppercase">v2.0 智能营养专家</p>
+                <h3 className="text-xl font-black text-[#5B544D] tracking-tight">营养追踪派</h3>
+                <p className="text-[10px] font-black text-[#84A59D] tracking-[0.3em] uppercase">NutriTrack Pro v2.5</p>
               </div>
 
               <div className="w-full h-px bg-[#F4F1EA]" />
 
               <div className="space-y-4 w-full">
                 <div className="flex justify-between items-center text-[12px]">
-                   <span className="font-bold text-[#A5998D]">打包状态</span>
-                   <span className="font-black text-[#84A59D] bg-[#F6F8F7] px-3 py-1 rounded-full border border-[#84A59D]/10">Ready for APK</span>
+                   <span className="font-bold text-[#A5998D]">应用环境</span>
+                   <span className="font-black text-[#84A59D] bg-[#F6F8F7] px-3 py-1 rounded-full border border-[#84A59D]/10">离线 APK 模式</span>
                 </div>
                 <div className="flex justify-between items-center text-[12px]">
-                   <span className="font-bold text-[#A5998D]">核心公式</span>
-                   <span className="font-black text-[#5B544D]">Mifflin-St Jeor</span>
+                   <span className="font-bold text-[#A5998D]">核心技术</span>
+                   <span className="font-black text-[#5B544D]">Capacitor & React</span>
                 </div>
                 <div className="flex justify-between items-center text-[12px]">
-                   <span className="font-bold text-[#A5998D]">离线模式</span>
-                   <span className="font-black text-[#84A59D]">已激活</span>
+                   <span className="font-bold text-[#A5998D]">备案状态</span>
+                   <span className="font-black text-[#CEC3B8]">待备案 (个人分发免备案)</span>
                 </div>
               </div>
 

@@ -1,13 +1,14 @@
 
 {
-  "name": "NutriTrack Pro",
-  "short_name": "NutriTrack",
-  "description": "智能营养管理与饮食追踪专家",
+  "name": "营养追踪派 NutriTrack Pro",
+  "short_name": "营养追踪",
+  "description": "智能营养管理与离线饮食追踪专家",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#FDFBF7",
   "theme_color": "#84A59D",
   "orientation": "portrait",
+  "lang": "zh-CN",
   "icons": [
     {
       "src": "https://img.icons8.com/fluency/512/leaf.png",
