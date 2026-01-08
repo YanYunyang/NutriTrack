@@ -324,6 +324,13 @@ const GoalSetter: React.FC<Props> = ({
                 </div>
               </div>
 
+              <div className="w-full space-y-2">
+                <div className="flex gap-4 justify-center">
+                  <button className="text-[11px] font-black text-[#84A59D] border-b border-[#84A59D]">用户协议</button>
+                  <button className="text-[11px] font-black text-[#84A59D] border-b border-[#84A59D]">隐私政策</button>
+                </div>
+              </div>
+
               <div className="pt-4 space-y-3">
                 <p className="text-[11px] text-[#CEC3B8] font-medium leading-relaxed px-4">
                   长按图标可进行截图保存作为应用启动图标。详细打包教程请参考源码根目录的 BUILD.md 文件。
