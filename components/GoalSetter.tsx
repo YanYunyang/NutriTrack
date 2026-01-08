@@ -25,7 +25,7 @@ const GoalSetter: React.FC<Props> = ({
   todayExercise, onAddExercise, onDeleteExercise, 
   onSave 
 }) => {
-  const [activeTab, setActiveTab] = useState<'profile' | 'manual' | 'exercise'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'manual' | 'exercise' | 'about'>('profile');
   const [exerciseName, setExerciseName] = useState('');
   const [exerciseCals, setExerciseCals] = useState('');
 
@@ -54,7 +54,6 @@ const GoalSetter: React.FC<Props> = ({
     });
   };
 
-  // 动态配比分析计算
   const macroRatios = useMemo(() => {
     const total = goals.protein * 4 + goals.carbs * 4 + goals.fat * 9 || 1;
     return {
@@ -69,16 +68,17 @@ const GoalSetter: React.FC<Props> = ({
       {/* Premium Tab Selector */}
       <div className="flex bg-[#F4F1EA] p-1.5 rounded-[1.75rem] border border-white shadow-sm mx-1">
         {[
-          { id: 'profile', label: '身体画像', icon: '👤' },
-          { id: 'exercise', label: '额外消耗', icon: '🔥' },
-          { id: 'manual', label: '营养目标', icon: '🎯' }
+          { id: 'profile', label: '基础', icon: '👤' },
+          { id: 'exercise', label: '运动', icon: '🔥' },
+          { id: 'manual', label: '目标', icon: '🎯' },
+          { id: 'about', label: '关于', icon: '✨' }
         ].map(tab => (
           <button 
             key={tab.id}
-            className={`flex-1 py-3 rounded-2xl flex items-center justify-center gap-2 text-[11px] font-black tracking-widest transition-all ${activeTab === tab.id ? 'bg-white shadow-md text-[#84A59D]' : 'text-[#CEC3B8]'}`}
+            className={`flex-1 py-3 rounded-2xl flex flex-col items-center justify-center gap-1 text-[9px] font-black tracking-widest transition-all ${activeTab === tab.id ? 'bg-white shadow-md text-[#84A59D]' : 'text-[#CEC3B8]'}`}
             onClick={() => setActiveTab(tab.id as any)}
           >
-            <span>{tab.icon}</span>
+            <span className="text-sm">{tab.icon}</span>
             {tab.label}
           </button>
         ))}
@@ -89,7 +89,6 @@ const GoalSetter: React.FC<Props> = ({
           <div className="bg-white rounded-[2.5rem] p-8 border border-[#F4F1EA] shadow-sm space-y-8">
             <h2 className="text-[11px] font-black text-[#A5998D] tracking-[0.3em] uppercase">基础生物信息</h2>
             
-            {/* Gender Selection Cards */}
             <div className="grid grid-cols-2 gap-4">
               <button 
                 onClick={() => updateProfile({ gender: 'male' as any })}
@@ -153,13 +152,13 @@ const GoalSetter: React.FC<Props> = ({
 
             <div className="mt-8 pt-8 border-t border-[#F4EFEA] flex justify-between items-center">
               <div>
-                <p className="text-[10px] text-[#CEC3B8] font-black tracking-widest uppercase">您的日均热量预算</p>
+                <p className="text-[10px] text-[#CEC3B8] font-black tracking-widest uppercase">日均预算</p>
                 <div className="flex items-baseline gap-2 mt-1">
-                  <span className="text-4xl font-black text-[#84A59D] tracking-tight">{Math.round(calculateTDEE(profile))}</span>
-                  <span className="text-xs font-black text-[#A5998D]">kcal/天</span>
+                  <span className="text-3xl font-black text-[#84A59D] tracking-tight">{Math.round(calculateTDEE(profile))}</span>
+                  <span className="text-[10px] font-black text-[#A5998D]">kcal</span>
                 </div>
               </div>
-              <button onClick={onSave} className="px-8 py-5 bg-[#84A59D] text-white rounded-[1.5rem] font-black text-[13px] shadow-xl shadow-[#84A59D]/30 active:scale-95 transition-all">确认并同步</button>
+              <button onClick={onSave} className="px-6 py-4 bg-[#84A59D] text-white rounded-[1.25rem] font-black text-[12px] shadow-xl shadow-[#84A59D]/30 active:scale-95 transition-all">同步</button>
             </div>
           </div>
         </div>
@@ -202,7 +201,7 @@ const GoalSetter: React.FC<Props> = ({
             <h3 className="text-[10px] font-black text-[#CEC3B8] tracking-widest uppercase">今日运动列表</h3>
             {todayExercise.length === 0 ? (
               <div className="py-16 text-center bg-white border border-dashed border-[#F4F1EA] rounded-[2.5rem]">
-                <p className="text-[12px] text-[#CEC3B8] font-bold">暂无运动记录，适当运动更有利于代谢哦 🏃</p>
+                <p className="text-[12px] text-[#CEC3B8] font-bold">暂无运动记录 🏃</p>
               </div>
             ) : (
               <div className="space-y-3">
@@ -229,7 +228,6 @@ const GoalSetter: React.FC<Props> = ({
           <div>
             <h2 className="text-[11px] font-black text-[#A5998D] tracking-[0.3em] uppercase mb-6">目标宏量营养配比</h2>
             
-            {/* Visual Ratio Bar - Interactive Pie Simulation */}
             <div className="bg-[#FDFBF7] p-6 rounded-[2rem] border border-[#F4F1EA] mb-8">
                <div className="flex h-4 rounded-full overflow-hidden shadow-inner mb-4">
                  <div className="bg-[#A8BCC9] transition-all duration-700" style={{ width: `${macroRatios.p}%` }} />
@@ -248,7 +246,7 @@ const GoalSetter: React.FC<Props> = ({
             </div>
 
             <div className="space-y-6">
-              <div className="grid grid-cols-3 gap-3 md:gap-4">
+              <div className="grid grid-cols-3 gap-3">
                 {[
                   { k: 'protein', l: '蛋白 (g)', c: 'bg-[#F4F7F9]', tc: 'text-[#A8BCC9]' },
                   { k: 'carbs', l: '碳水 (g)', c: 'bg-[#FAF4F2]', tc: 'text-[#D9A78D]' },
@@ -286,8 +284,57 @@ const GoalSetter: React.FC<Props> = ({
             onClick={onSave}
             className="w-full py-5 bg-[#5B544D] text-white rounded-[1.75rem] font-black text-[14px] shadow-2xl shadow-[#5B544D]/20 active:scale-95 transition-all"
           >
-            保存并应用新目标
+            保存并应用
           </button>
+        </div>
+      )}
+
+      {activeTab === 'about' && (
+        <div className="animate-in fade-in duration-700">
+           <div className="bg-white rounded-[3rem] p-10 border border-[#F4F1EA] shadow-sm flex flex-col items-center text-center space-y-6">
+              {/* Designed App Icon Preview */}
+              <div className="w-32 h-32 bg-[#84A59D] rounded-[2.5rem] shadow-2xl shadow-[#84A59D]/40 flex items-center justify-center relative overflow-hidden group">
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent pointer-events-none" />
+                  <svg className="w-20 h-20 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" />
+                    <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" />
+                    <path d="m13 17 2 2 4-4" strokeWidth="2.5" />
+                  </svg>
+              </div>
+              
+              <div className="space-y-2">
+                <h3 className="text-xl font-black text-[#5B544D] tracking-tight">NutriTrack Pro</h3>
+                <p className="text-[10px] font-black text-[#84A59D] tracking-[0.3em] uppercase">v2.0 智能营养专家</p>
+              </div>
+
+              <div className="w-full h-px bg-[#F4F1EA]" />
+
+              <div className="space-y-4 w-full">
+                <div className="flex justify-between items-center text-[12px]">
+                   <span className="font-bold text-[#A5998D]">打包状态</span>
+                   <span className="font-black text-[#84A59D] bg-[#F6F8F7] px-3 py-1 rounded-full border border-[#84A59D]/10">Ready for APK</span>
+                </div>
+                <div className="flex justify-between items-center text-[12px]">
+                   <span className="font-bold text-[#A5998D]">核心公式</span>
+                   <span className="font-black text-[#5B544D]">Mifflin-St Jeor</span>
+                </div>
+                <div className="flex justify-between items-center text-[12px]">
+                   <span className="font-bold text-[#A5998D]">离线模式</span>
+                   <span className="font-black text-[#84A59D]">已激活</span>
+                </div>
+              </div>
+
+              <div className="pt-4 space-y-3">
+                <p className="text-[11px] text-[#CEC3B8] font-medium leading-relaxed px-4">
+                  长按图标可进行截图保存作为应用启动图标。详细打包教程请参考源码根目录的 BUILD.md 文件。
+                </p>
+                <div className="flex gap-2 justify-center">
+                  <span className="w-2 h-2 rounded-full bg-[#84A59D] animate-pulse" />
+                  <span className="w-2 h-2 rounded-full bg-[#D9A78D] animate-pulse [animation-delay:0.2s]" />
+                  <span className="w-2 h-2 rounded-full bg-[#E9C46A] animate-pulse [animation-delay:0.4s]" />
+                </div>
+              </div>
+           </div>
         </div>
       )}
     </div>

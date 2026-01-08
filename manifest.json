@@ -1,8 +1,8 @@
 
 {
-  "name": "NutriTrack Pro - 智能营养管理",
+  "name": "NutriTrack Pro",
   "short_name": "NutriTrack",
-  "description": "极简高效的智能营养追踪与个性化饮食建议应用。",
+  "description": "智能营养管理与饮食追踪专家",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#FDFBF7",

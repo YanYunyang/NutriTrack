@@ -1,41 +1,46 @@
 
-# 营养管理 App 发布指南 (Execution Path)
+# 🚀 NutriTrack Pro - APK 离线包打包指南
 
-本项目是一个标准的 React SPA。若要将其打包发布为移动 App，推荐以下路径：
+要将此 Web 项目转换为手机上可直接安装的 `.apk` 文件，请遵循以下专业路径：
 
-### 1. 移动端封装 (Capacitor)
-这是将 Web 应用转换为原生 iOS/Android 应用最主流且简单的方式。
+### 1. 环境准备 (必要条件)
+- 安装 [Node.js](https://nodejs.org/) (推荐 LTS 版本)
+- 安装 [Android Studio](https://developer.android.com/studio)
+- 在 Android Studio 中安装 SDK Platform (建议 API 30+)
 
-**步骤：**
-1.  **准备环境**: 安装 Node.js 并确保 React 项目能够正常 `npm run build`。
-2.  **添加 Capacitor**:
-    ```bash
-    npm install @capacitor/core @capacitor/cli
-    npx cap init NutriTrack com.yourname.nutritrack
-    ```
-3.  **构建 Web 代码**: `npm run build` (确保 `dist` 或 `build` 文件夹生成)。
-4.  **添加平台**:
-    ```bash
-    npm install @capacitor/android @capacitor/ios
-    npx cap add android
-    npx cap add ios
-    ```
-5.  **同步并打开**:
-    ```bash
-    npx cap copy
-    npx cap open android # 将启动 Android Studio
-    npx cap open ios     # 将启动 Xcode
-    ```
-6.  **在原生工具中签名并发布**。
+### 2. 初始化 Capacitor 容器
+在项目根目录下运行：
+```bash
+# 安装核心依赖
+npm install @capacitor/core @capacitor/cli
 
-### 2. 离线缓存 (PWA)
-如果您不想上架应用商店，可以配置为 Progressive Web App。
+# 初始化项目 (App 名称: NutriTrack Pro)
+npx cap init "NutriTrack Pro" com.nutritrack.app --web-dir dist
 
-**步骤：**
-1.  **Service Worker**: 引入 `vite-plugin-pwa` (如果使用 Vite) 或 `workbox`。
-2.  **Manifest**: 完善 `public/manifest.json`，定义图标、启动色和独立显示模式 (`display: standalone`)。
-3.  **HTTPS 部署**: 部署到 Vercel 或 Netlify 即可通过浏览器“添加到主屏幕”安装。
+# 安装 Android 平台插件
+npm install @capacitor/android
+npx cap add android
+```
 
-### 3. 注意事项
-- **API Key**: 生产环境应通过后端代理 Gemini 请求，或使用环境变量。
-- **持久化**: 目前代码使用 `localStorage`，在 App 模式下效果良好，但大规模数据建议升级到 `IndexedDB`。
+### 3. 生成编译文件
+```bash
+# 1. 编译 Web 代码 (如果您使用 Vite/Webpack)
+npm run build
+
+# 2. 将代码同步到 Android 工程
+npx cap copy android
+```
+
+### 4. 生成 APK (关键步骤)
+1. 运行 `npx cap open android`，这会自动打开 **Android Studio**。
+2. 等待 Gradle 同步完成（右下角进度条消失）。
+3. 在顶部菜单栏选择：**Build > Build Bundle(s) / APK(s) > Build APK(s)**。
+4. 编译完成后，点击右下角的 **"locate"** 弹窗，即可找到生成的 `app-debug.apk`。
+
+### 5. 关于图标 (Icons)
+- 您可以使用本 App 中“个人档案”页面展示的图标作为素材。
+- 将图片放入 Android 工程的 `app/src/main/res/mipmap` 目录下即可替换启动图标。
+
+### 6. 注意事项
+- **离线运行**: 本应用的大部分功能（计算、本地建议）均支持完全离线运行。
+- **权限**: 默认已在 `metadata.json` 中声明相机权限（用于未来可能的条码扫描）。
